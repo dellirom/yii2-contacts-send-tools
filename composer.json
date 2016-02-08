@@ -11,6 +11,7 @@
             "homepage": "http://smart-team.co.ua/"
         }
     ],
+    "minimum-stability": "stable",
     "require": {
         "yiisoft/yii2": "*"
     },
