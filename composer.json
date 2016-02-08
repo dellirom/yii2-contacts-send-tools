@@ -11,12 +11,12 @@
         }
     ],
     "require": {
-        "yiisoft/yii2": ">1.1.0"
+        "yiisoft/yii2": "*"
     },
     "autoload": {
         "psr-4": {
-            "dellirom\\com\\\\": ""
+            "dellirom\\com\\": ""
         }
     },
-    "minimum-stability": "stable"
+    "prefer-stable": true
 }
