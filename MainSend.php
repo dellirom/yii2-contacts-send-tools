@@ -1,11 +1,11 @@
 <?php
 
-namespace dellirom\com\;
+namespace dellirom\com;
 
 /**
  * This is just an example.
  */
-class AutoloadExample extends \yii\base\Widget
+class MainSend extends \yii\base\Widget
 {
     public function run()
     {
