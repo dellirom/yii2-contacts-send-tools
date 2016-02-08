@@ -1,0 +1,21 @@
+{
+    "name": "contacts-send-tools/yii2-contacts-send-tools",
+    "description": "I use it in my own project. It can be not stable",
+    "type": "yii2-extension",
+    "keywords": ["yii2","extension"],
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Dellirom",
+            "email": "dellirom@gmail.com"
+        }
+    ],
+    "require": {
+        "yiisoft/yii2": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "dellirom\\com\\\\": ""
+        }
+    }
+}
