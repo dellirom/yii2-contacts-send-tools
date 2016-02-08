@@ -19,5 +19,5 @@
             "dellirom\\com\\": ""
         }
     },
-    "preferred-install": "dev"
+    "minimum-stability": "dev",
 }
