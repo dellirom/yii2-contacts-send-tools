@@ -4,6 +4,8 @@
     "type": "yii2-extension",
     "keywords": ["yii2","extension", "dellirom", "contacts"],
     "license": "GPL-2.0",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "authors": [
         {
             "name": "Dellirom",
@@ -19,8 +21,7 @@
             "dellirom\\com\\": ""
         }
     },
-    "minimum-stability": "dev",
     "require-dev": {
-        "dellirom/yii2-contacts-send-tools": "dev-master"
+        "dellirom/yii2-contacts-send-tools": "1.2"
     }
 }
