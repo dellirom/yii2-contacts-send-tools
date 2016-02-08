@@ -3,20 +3,27 @@
     "description": "I use it in my own project. It can be not stable",
     "type": "yii2-extension",
     "keywords": ["yii2","extension", "dellirom", "contacts"],
+    "homepage": "https://github.com/dellirom/yii2-contacts-send-tools.git",
     "license": "GPL-2.0",
     "authors": [
         {
             "name": "Dellirom",
-            "email": "dellirom@gmail.com"
+            "email": "dellirom@gmail.com",
+            "homepage": "http://smart-team.co.ua/"
         }
     ],
     "require": {
         "yiisoft/yii2": "*"
     },
+    "repositories": [
+    {
+      "type": "vcs",
+      "url":  "https://github.com/dellirom/yii2-contacts-send-tools.git"
+    }
+  ],
     "autoload": {
         "psr-4": {
             "dellirom\\com\\": ""
         }
-    },
-    "prefer-stable": true
+    }
 }
