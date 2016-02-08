@@ -18,5 +18,5 @@
             "dellirom\\com\\\\": ""
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "stable"
 }
