@@ -11,13 +11,13 @@ The preferred way to install this extension is through [composer](http://getcomp
 Either run
 
 ```
-php composer.phar require --prefer-dist dellirom/yii2-contacts-send-tools "*"
+php composer.phar require --prefer-dist dellirom/yii2-contacts-send-tools "dev-master"
 ```
 
 or add
 
 ```
-"dellirom/yii2-contacts-send-tools": "*"
+"dellirom/yii2-contacts-send-tools": "dev-master"
 ```
 
 to the require section of your `composer.json` file.
