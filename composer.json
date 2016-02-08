@@ -19,5 +19,8 @@
             "dellirom\\com\\": ""
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "require-dev": {
+        "dellirom/yii2-contacts-send-tools": "dev-master"
+    }
 }
