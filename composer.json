@@ -2,7 +2,7 @@
     "name": "dellirom/yii2-contacts-send-tools",
     "description": "I use it in my own project. It can be not stable",
     "type": "yii2-extension",
-    "keywords": ["yii2","extension"],
+    "keywords": ["yii2","extension", "dellirom", "contacts"],
     "license": "GPL-2.0",
     "authors": [
         {
