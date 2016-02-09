@@ -1,4 +1,6 @@
 <?php
+
+namespace dellirom\com\components;
 	/**
 	*
 	* @package Main

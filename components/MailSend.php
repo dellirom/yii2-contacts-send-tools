@@ -303,6 +303,15 @@ class MailSend
 		$this->mail($subject, $message);
 	}
 
+
+	/**
+	*	Отправка данных в Amo CRM
+	*/
+	public function AmoCRM()
+	{
+		require_once __DIR__ . DIRECTORY_SEPARATOR . 'components/AmoCRM.php';
+		return new AmoCRM();
+	}
 	/**
 	*	Seter. Для приема и обработки глобального масива $_POST через private $_data
 	*/
@@ -445,7 +454,6 @@ class MailSend
 		}
 
 	}
-
 	/**
 	*	Проверка на наявность IP клиента в файле BAN_FILE
 	*/

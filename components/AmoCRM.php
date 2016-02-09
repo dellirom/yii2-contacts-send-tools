@@ -1,15 +1,15 @@
 <?php
+
+namespace dellirom\com\components;
+
 /**
 * 	Интеграция с Amo CRM через REST API
 */
-class AmoCRM
+class AmoCRM extends CurlHelper
 {
 
-	protected $subdomain = '4chayki'; #Наш аккаунт - поддомен
-	protected $user = array(
-			'USER_LOGIN'=>'rigidpeople@gmail.com', #Ваш логин (электронная почта)
-			'USER_HASH'=>'d2d8c883dec722a489450e9926e11dba' #Хэш для доступа к API (смотрите в профиле пользователя)
-			);
+	protected $subdomain;
+	protected $user;
 	protected $data;
 
 	const HTTP_HEADER 		= true;
@@ -19,26 +19,21 @@ class AmoCRM
 
 	public function __construct()
 	{
+		//$initConfig 			= new \dellirom\com\MainSend();
+		//$config 					= $initConfig->initConfig();
+		$config 					= Config::get();
+		$this->user 			= $config->user;
+		$this->subdomain 	= $config->subdomain;
+
 		// Авторизация с AmoCRM
-		$link				= 'https://'.$this->subdomain.'.amocrm.ru/private/api/auth.php?type=json';#Формируем ссылку для запроса
+		$link				= 'https://'.$this->subdomain . '.amocrm.ru/private/api/auth.php?type=json';#Формируем ссылку для запроса
 		$postFields = http_build_query($this->user);
-		$result			= $this->initCurl($link, $postFields);
+		$result			= $this->useCurl($link, $postFields);
 		$response 	= json_decode($result, true);
 		$response 	= $response['response'];
 		if(!isset($response['auth'])) #Флаг авторизации доступен в свойстве "auth"
-			return 'Авторизация не удалась';
+		return 'Авторизация не удалась';
 	}
-
-	/**
-	* Добавление события в Amocrm
-	*/
-	// public function addNotes($data, $type = self::TYPE_NOTES)
-	// {
-	// 	$link				='https://' . $this->subdomain . '.amocrm.ru/private/api/v2/json/notes/set';
-	// 	$postFields = json_encode($data);
-	// 	$result 		= $this->initCurl($link, $postFields, self::HTTP_HEADER);
-	// 	return $result;
-	// }
 
 	/**
 	* Добавляем данные в AmoCRM в зависимости от типов данных. (contacts, leads, notes)
@@ -48,7 +43,7 @@ class AmoCRM
 		$type 			= $this->amoType($type);
 		$link				='https://' . $this->subdomain . '.amocrm.ru/private/api/v2/json/' . $type . '/set';
 		$postFields = json_encode($data);
-		$result 		= $this->initCurl($link, $postFields, self::HTTP_HEADER);
+		$result 		= $this->useCurl($link, $postFields, self::HTTP_HEADER);
 		return $result;
 	}
 
@@ -63,17 +58,18 @@ class AmoCRM
 		}
 		$link			= 'https://' . $this->subdomain . '.amocrm.ru/private/api/v2/json/' . $type . '/list'. $query;
 		$postFields = false;
-		$result 		= $this->initCurl($link, $postFields, self::HTTP_HEADER);
+		$result 		= $this->useCurl($link, $postFields, self::HTTP_HEADER);
 		return json_decode($result);
 	}
+
 	/**
 	* Добавляем полную переписку с JivoSite (Cинхронизировано с Roistat)
 	*/
 	public function addChat($roistat, $jivoSiteId, $jivoSiteChat)
 	{
 		$queryRoistat = array(
-					'query' => $roistat,
-					);
+			'query' => $roistat,
+			);
 		$out = $this->listData($queryRoistat);
 		if ($out !== NULL) {
 			if (count($out->response->leads == 1)) {
@@ -159,11 +155,12 @@ class AmoCRM
 
 	public function listCurrentAccounts()
 	{
-		$link			= 'https://'.$this->subdomain.'.amocrm.ru/private/api/v2/json/accounts/current'; #$this->subdomain уже объявляли выше
-		$out 			= $this->initCurl($link, false);
+		$link			= 'https://' . $this->subdomain . '.amocrm.ru/private/api/v2/json/accounts/current'; #$this->subdomain уже объявляли выше
+		$out 			= $this->useCurl($link, false);
 		$response = json_decode($out,true);
 		return $response;
 	}
+
 	/**
 	*	Проверяет есть ли поле PHONE в контактах AmoCRM
 	*/
@@ -173,9 +170,9 @@ class AmoCRM
 		$response = $this->listCurrentAccounts();
 		$account 	= $response['response']['account'];
 		$need 		= array_flip($customFields);
-			if(isset($account['custom_fields'],$account['custom_fields'][$type]))
-				do
-			{
+		if(isset($account['custom_fields'],$account['custom_fields'][$type]))
+			do
+		{
 			foreach($account['custom_fields'][$type] as $field)
 				if(is_array($field) && isset($field['id']))
 				{
@@ -185,10 +182,12 @@ class AmoCRM
 					if(empty($diff))
 						break 2;
 				}
-				if(isset($diff))
+				if(isset($diff)){
 					die('В amoCRM отсутствуют следующие поля'.': '.join(', ',$diff));
-				else
+				}
+				else{
 					die('Невозможно получить дополнительные поля');
+				}
 			}
 			while(false);
 			else
@@ -198,78 +197,20 @@ class AmoCRM
 	}
 
 	/**
-	*	Инициализируем CURL для последуюющих методов
-	*/
-	public function initCurl($link, $postFields, $httpHeader = false)
-	{
-		$curl=curl_init(); #Сохраняем дескриптор сеанса cURL
-		#Устанавливаем необходимые опции для сеанса cURL
-		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
-		curl_setopt($curl,CURLOPT_USERAGENT,'amoCRM-API-client/1.0');
-		curl_setopt($curl,CURLOPT_URL,$link);
-		if($postFields != false){
-			curl_setopt($curl,CURLOPT_CUSTOMREQUEST,'POST');
-			curl_setopt($curl,CURLOPT_POSTFIELDS, $postFields);
-		}
-		if ($httpHeader) {
-			curl_setopt($curl,CURLOPT_HTTPHEADER,array('Content-Type: application/json'));
-		}
-		curl_setopt($curl,CURLOPT_HEADER,false);
-    curl_setopt($curl,CURLOPT_COOKIEFILE,dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cookie.ini'); #PHP>5.3.6 dirname(__FILE__) -> __DIR__
-    curl_setopt($curl,CURLOPT_COOKIEJAR,dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'cookie.ini'); #PHP>5.3.6 dirname(__FILE__) -> __DIR__
-    curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,0);
-    curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,0);
-
-    $out=curl_exec($curl); #Инициируем запрос к API и сохраняем ответ в переменную
-    $code=curl_getinfo($curl,CURLINFO_HTTP_CODE);
-    curl_close($curl); #Заверашем сеанс cURL
-    $this->CheckCurlResponse($code);
-    return $out;
-	}
-
-	/**
 	* Типы данных в AmoCRM
 	*/
 	public function amoType($type)
 	{
 		switch ($type) {
 			case self::TYPE_LEADS:
-				return 'leads';
-				break;
+			return 'leads';
+			break;
 			case self::TYPE_CONTACTS:
-				return 'contacts';
-				break;
+			return 'contacts';
+			break;
 			case self::TYPE_NOTES:
-				return 'notes';
-				break;
-		}
-	}
-
-	/**
-	*	Определяем ошибки вовремя POST запроса через CURL
-	*/
-	public function CheckCurlResponse($code)
-	{
-		$code=(int)$code;
-		$errors=array(
-			301=>'Moved permanently',
-			400=>'Bad request',
-			401=>'Unauthorized',
-			403=>'Forbidden',
-			404=>'Not found',
-			500=>'Internal server error',
-			502=>'Bad gateway',
-			503=>'Service unavailable'
-			);
-		try
-		{
-			#Если код ответа не равен 200 или 204 - возвращаем сообщение об ошибке
-			if($code!=200 && $code!=204)
-				throw new Exception(isset($errors[$code]) ? $errors[$code] : 'Undescribed error',$code);
-		}
-		catch(Exception $E)
-		{
-			die('Ошибка: '.$E->getMessage().PHP_EOL.'Код ошибки: '.$E->getCode());
+			return 'notes';
+			break;
 		}
 	}
 
