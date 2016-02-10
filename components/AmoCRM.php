@@ -1,5 +1,5 @@
 <?php
-
+//Done
 namespace dellirom\com\components;
 
 /**
@@ -19,8 +19,6 @@ class AmoCRM extends CurlHelper
 
 	public function __construct()
 	{
-		//$initConfig 			= new \dellirom\com\MainSend();
-		//$config 					= $initConfig->initConfig();
 		$config 					= Config::get();
 		$this->user 			= $config->user;
 		$this->subdomain 	= $config->subdomain;
@@ -49,6 +47,7 @@ class AmoCRM extends CurlHelper
 
 	/**
 	* Выборка данных из AmoCRM в зависимости от типов данных. (contacts, leads, notes)
+	* @return Object
 	*/
 	public function listData($query = false, $type = self::TYPE_LEADS)
 	{
@@ -112,7 +111,8 @@ class AmoCRM extends CurlHelper
 	}
 
 	/**
-	* Добавление контакта в AmoCRM/Данные передаются ввиде ьассива
+	* Добавление контакта в AmoCRM/Данные передаются ввиде массива
+	* @return Array
 	*/
 	public function addContacts($data)
 	{
@@ -153,6 +153,10 @@ class AmoCRM extends CurlHelper
 		}
 	}
 
+	/**
+	* Возвращает данные акаунта
+	* @return Array
+	*/
 	public function listCurrentAccounts()
 	{
 		$link			= 'https://' . $this->subdomain . '.amocrm.ru/private/api/v2/json/accounts/current'; #$this->subdomain уже объявляли выше
@@ -163,6 +167,7 @@ class AmoCRM extends CurlHelper
 
 	/**
 	*	Проверяет есть ли поле PHONE в контактах AmoCRM
+	* @return Array
 	*/
 	public function checkCustomFields($customFields, $type = self::TYPE_CONTACTS)
 	{
@@ -198,6 +203,7 @@ class AmoCRM extends CurlHelper
 
 	/**
 	* Типы данных в AmoCRM
+	* @return String
 	*/
 	public function amoType($type)
 	{

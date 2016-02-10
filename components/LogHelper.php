@@ -1,30 +1,32 @@
 <?php
-
+//Done
 namespace dellirom\com\components;
 
-class HTTPHelper
+class LogHelper extends HTTPHelper
 {
+	protected $dataPath;
 	private $dataWrite 	 		= "log.ini"; 			// log файл. Запись всей информации.
 	private $erroLog				= "error.ini";		// Файл для отладки.
+	private $timeCleanLog 	= 2;				// Время для очищения $dataWrite (изменяется в сутках)
+	private $logMails				= array();
 
-	public function __constract()
+	public function __construct()
 	{
-		$this->dataPath 			= dirname(__FILE__).DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR;
-		$this->dataWrite 			= $this->dataPath.$this->dataWrite;
-		$this->erroLog 				= $this->dataPath.$this->erroLog;
+		$this->dataPath 			= dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+		$this->dataWrite 			= $this->dataPath . $this->dataWrite;
+		$this->erroLog 				= $this->dataPath . $this->erroLog;
 	}
 
 	/**
 	* Записываем в файл log.ini. Очищаем файл каждые timeCleanLog суток. Отправляем содиржимое файла на email перед очисткой.
+	* @return Boolean
 	*/
-	public function logData()
+	public function log()
 	{
+		$this->ip 	= $this->getIP();
+		$this->ips 	= $this->getIPs();
+		$this->url 	= $this->getURL();
 		$file 			= file($this->dataWrite);
-
-		$this->clearMails();
-		$this->addMail('1@gslots.net');
-		$this->addMail('dellirom@gmail.com');
-
 		$txt 				= $this->url.";";
 		$dtime 			= date("d.m.y_G:i");
 		$txt 				.= $dtime.";";
@@ -49,11 +51,17 @@ class HTTPHelper
 				foreach ($file as $key => $value) {
 					$message .= "\t$value \n";
 				}
-				$this->mail($subject, $message, 'log@gslots.net', 'log');
+				$mail = new MailHelper;
+				$mail->config->fromMail = 'log@gslots.net';
+				$mail->config->fromName = 'log';
+				//$mail->addMail('1@gslots.net');
+				$mail->addMail('dellirom@gmail.com');
+				$mail->sendMail($subject, $message, false);
 				file_put_contents($this->dataWrite, ""); // Очищаем файл dataWrite (log.ini) после отправки информации на email.
 			}
 		}
 		file_put_contents($this->dataWrite, $txt, FILE_APPEND); // Записываем информацию в файл dataWrite (log.ini)
+		return true;
 	}
 
 	private function writeFile($fileName, $content, $const = FILE_APPEND){
@@ -62,12 +70,13 @@ class HTTPHelper
 
 	/**
 	*	Скрипт для удалленной отладки и записи данных в файл $this->errrLog
+	* @return Boolean
 	*/
 	public function writeError($var)
 	{
-		$content = '';
-		$date = date("m.d.y H:i:s");
-		$content .= $date." - ";
+		$content 	= '';
+		$date 		= date("m.d.y H:i:s");
+		$content .= $date . " - ";
 
 		if(is_array($var)){
 			//$content .= implode(";", $var);
@@ -86,7 +95,9 @@ class HTTPHelper
 			$content .= $var."\n";
 			$this->writeFile($this->erroLog, $content);
 		}
+		return true;
 	}
+
 }
 
 ?>

@@ -2,29 +2,31 @@
 
 namespace dellirom\com;
 
-//use dellirom\com\MailSend;
-
-/**
- * This is just an example.
- */
 class MainSend extends \yii\base\Widget
 {
-	public function initClass()
-	{
-		//return new MailSend();
-	}
-
-
-	public function initConfig()
-	{
-		 return (object) parse_ini_file( __DIR__ . DIRECTORY_SEPARATOR . "config.ini" );
-	}
 
 	public function run()
 	{
 		echo "<pre style='background:#FFF'>";
-		$mail = new \dellirom\com\components\MailHelper;
-		var_dump($mail);
+
+		$_POST['name'] = 'dellirom';
+		$_POST['tel'] = '0508328874';
+
+		$class = new \dellirom\com\components\LogHelper;
+		//$class->
+		$class->$_data = $_POST;
+
+		//var_dump($class);
+		var_dump($class->writeError('afdsgasdgsadg'));
+
+		//$class->url = 'host';
+		//var_dump($class);
+		//var_dump($class->sendMail('dellirom', '0508328874'));
+		//var_dump($class->sendClientIfo());
+		//var_dump($class->addMail());
+
+		//var_dump($class->sendClientIfo());
+		//var_dump($class->banIP("125.152.115.5"));
 		//$config = $this->initConfig();
 		//$AmoCRM = new \dellirom\com\components\AmoCRM();
 		//echo $config->SMS_Mail;

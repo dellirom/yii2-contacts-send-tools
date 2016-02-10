@@ -339,7 +339,7 @@ class phpmailer
     * @public
     * @returns void
     */
-   function AddAddress($address, $name = "") {
+   public function AddAddress($address, $name = "") {
       $cur = count($this->to);
       $this->to[$cur][0] = trim($address);
       $this->to[$cur][1] = $name;

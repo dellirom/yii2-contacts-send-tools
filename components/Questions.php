@@ -1,24 +1,19 @@
 <?php
-class Questions extends MailHelper{
+//Done
+namespace dellirom\com\components;
+
+class Questions extends HTTPHelper{
 
 	/**
 	*	Отправка вопросов заполненых клиентом
 	*/
 	public function sendQuestions($data)
 	{
-		$this->clearMails();
-		if ($this->name == "may"){
-			$this->clearMails();
-			$this->addMail('1@gslots.net');
-		} elseif ($this->name == "dellirom"){
-			$this->clearMails();
-			$this->addMail('dellirom@gmail.com');
-		} else {
-			$this->clearMails();
-			$this->addMail('1@gslots.net');
-			$this->addMail('kingogurcov@gmail.com');
-			$this->addMail('go@gslots.net');
-		}
+		$mail = new MailHelper;
+
+		$this->ips 			= $this->getIPs();
+		$this->ip				= $this->getIP();
+		$this->host 		= $this->getHOST();
 
 		// Заголовок письма с датой
 		$subject = date("d.m.y_G:i", strtotime($data['date']));
@@ -37,8 +32,7 @@ class Questions extends MailHelper{
 		$message .="\n\n\nВопросы были заполнены на сайте - $this->q_url";
 		$message.= "\n\n\nВсе варианты ip: $this->q_ip\n";
 		$message.= "\n http://sypexgeo.net/ru/demo/";
-		//var_dump($data);
-		$this->mail($subject, $message);
+		$mail->mailSend($subject, $message);
 	}
 }
  ?>

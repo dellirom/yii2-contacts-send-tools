@@ -1,10 +1,8 @@
 <?php
-
+//Done
 namespace dellirom\com\components;
 
 /**
-* Class Mail Send
-*
 *	Защита от спама. (Начальное ТЗ)
 *	Блокировать письма которые идут с одного ip не более $amountEntry писем в $timeDel минут.
 *	Смотрим в файле существование такого ip и время когда с данного ip была оставлена заявка.
@@ -13,52 +11,65 @@ namespace dellirom\com\components;
 * Через foreach проверять наличие ip пользовтелья в файле ban_ip.ini. Если совпал возвращать false. Если в файле ip нет возвращать true.
 * В файл ban_ip.ini забаненые ip можно вносить вручную, а можно автоматически записывать при проверке методом botStop
 */
-class BotStop
+
+class BotStop extends HTTPHelper
 {
 	/**
-	*	Seter. Для приема и обработки глобального масива $_POST через private $_data
+	*	Настройки работы скрипта. Объявляются в файле config.ini
 	*/
-	public function __SET($name,$data)
-	{
-		if (is_array($data)) {
-			foreach ($data as $name => $value) {
-				$this->_data[$name] = $value;
-			}
-		}else{
-			$this->_data[$name] = $data;
-		}
-	}
+	private $timeDel;
+	private $amountEntry;
+	private $amountNullIP;
+	private $timeClear;
+	private $banAmount;
 
 	/**
-	*	Geter. Для выдачи обработаных данных
+	*	Пути к файлам для работы скрипта.
 	*/
-	public function __GET($name)
-	{
-		return $this->_data[$name];
-	}
+	private $config;
+	private $dataPath;
+	private $banFile 		 		= "banip.ini"; 		// Файл для забаненых IP
+	private $dataFile 	 		= "data.ini"; 		// Файл для проверки количества посещений и период посещений
+	private $dataNulIP 	 		= "nullip.ini"; 	// Файл если IP у клиента не существует
+	private $chat 					= "chat.ini";
+	private $range 					= "range.ini";
 
 	/**
-	*	Возвращает результат соответствия IP клиента с регулярным выражением.
-		*/
-	public function getPatternIP()
+	*	Объявляем свойства для работы
+	*/
+	private $new 		 				= true; 			// Для проверки нового IP
+	private $result 		 		= true; 			// Конечный результат
+	//private $patternIP; 								// Проверка на сответствие IP регулярному выражению
+	private $_data 		 			= array();		// Хранения данных из $_POST масива
+	public $ips 		 				= array(); 		// Храним все IP клиента в масиве
+	public $ip_str; 											// Храним строку для записи в файл $dataFile в формате ip=timstamp=count
+	public $check_ip;											// IP для проверки
+	public $ip;
+
+
+	public function __construct()
 	{
-		return $this->patternIP;
-	}
+		$this->config = Config::get();
 
-	public function addPatternIP($ips){
+		$this->timeDel 				= $this->config->timeDel;
+		$this->amountEntry 		= $this->config->amountEntry;
+		$this->amountNullIP 	= $this->config->amountNullIP;
+		$this->timeClear			= $this->config->timeClear;
+		$this->timeCleanLog 	= $this->config->timeCleanLog;
+		$this->banAmount 			= $this->config->banAmount;
 
-		$this->ips = unserialize($ips);
+		$this->dataPath 			= dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+		$this->banFile 				= $this->dataPath . $this->banFile;
+		$this->dataFile				= $this->dataPath . $this->dataFile;
+		$this->dataNulIP 			= $this->dataPath . $this->dataNulIP;
+		$this->chat 					= $this->dataPath . $this->chat;
+		$this->range 					= $this->dataPath . $this->range;
 
-		$this->ips =  array_unique(array_filter($this->ips)); // Удаляем из масива $this->ips ячейки со значением NULL и удаляет одинаковые IP
+		$this->patternIP 			= $this->getPatternIP();
+		$this->ips 						= $this->getIPs();
+		$this->ip							= $this->getIP();
+		$this->host 					= $this->getHOST();
 
-		$pattern = "/([0-9]{1,3}[\.]){3}[0-9]{1,3}/"; // Регулярное выражение для IP
-		if (is_array($this->ips)) {
-			foreach ($this->ips as $id => $ip) {
-				//возвращает 1, если параметр pattern соответствует переданному параметру ip, 0 если нет, или FALSE в случае ошибки.
-				if (preg_match($pattern, $ip) == 0 )
-					$this->patternIP = false;
-			}
-		}
 	}
 
 	/**
@@ -130,22 +141,21 @@ class BotStop
 	}
 
 	/**
-	*	IP для проверки
-	*/
-	public  function getIP(){
-		return $this->ip;
-	}
-
-	/**
 	*	Баним IP, если зпросов было больше чем $amountEntry
-		*/
+	* @return Boolean
+	*/
 	public function banIP($banIP)
 	{
 		if (!$this->checkBanIP($banIP))
 			return false;
 		file_put_contents($this->banFile, $banIP."\n", FILE_APPEND);
+		return true;
 	}
 
+	/**
+	* Проверка диапазона IP в файле range.ini
+	* @return Boolean
+	*/
 	public function checkRange($ip){
 		$rangeIps = file($this->range);
 		foreach ($rangeIps as $rangeIp) {
@@ -157,10 +167,11 @@ class BotStop
 				return true; // если совпадает с диапазоном
 			}
 		}
-
 	}
+
 	/**
 	*	Проверка на наявность IP клиента в файле BAN_FILE
+	* @return Boolean
 	*/
 	public function checkBanIP($banIP)
 	{
@@ -174,13 +185,13 @@ class BotStop
 					return false; // Не записываем  забаненый IP, если он там уже есть
 				}
 			}
-			//return $ip;
 			return true;
 		}
 	}
 
 	/**
 	*	Проверка перед отправкой письма
+	* @return Boolean
 	*/
 	public  function checkBeforeSend()
 	{
